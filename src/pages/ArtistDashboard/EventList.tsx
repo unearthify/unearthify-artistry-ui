@@ -1,8 +1,42 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import axios from "axios";
-import {toast} from "react-hot-toast";
-import { MoreVertical, X, Calendar, MapPin, Tag, FileText, Eye, Calendar as CalendarIcon, Repeat, Clock, ChevronRight } from "lucide-react";
+import { toast } from "react-hot-toast";
+import { MoreVertical, X, Calendar, MapPin, Tag, FileText, Bell, Calendar as CalendarIcon, Repeat, Clock } from "lucide-react";
+
+const getReminderKey = (id: string) => `reminder_sent_at_${id}`;
+
+const canSendReminder = (submission: any): boolean => {
+  if (submission.status !== "pending") return false;
+
+  const now = Date.now();
+  const createdAt = new Date(submission.createdAt).getTime();
+  const hoursSinceCreation = (now - createdAt) / (1000 * 60 * 60);
+  if (hoursSinceCreation < 24) return false;
+
+  const lastSent = localStorage.getItem(getReminderKey(submission._id));
+  if (lastSent) {
+    const hoursSinceReminder = (now - parseInt(lastSent)) / (1000 * 60 * 60);
+    if (hoursSinceReminder < 24) return false;
+  }
+
+  return true;
+};
+
+const getTimeLeftLabel = (submission: any): string | null => {
+  if (submission.status !== "pending") return null;
+
+  const now = Date.now();
+  const createdAt = new Date(submission.createdAt).getTime();
+  const lastSent = localStorage.getItem(getReminderKey(submission._id));
+  const referenceTime = lastSent ? parseInt(lastSent) : createdAt;
+  const msLeft = referenceTime + 24 * 60 * 60 * 1000 - now;
+
+  if (msLeft <= 0) return null;
+
+  const hoursLeft = Math.ceil(msLeft / (1000 * 60 * 60));
+  return `${hoursLeft}h`;
+};
 
 const EventList = ({ onEdit }: any) => {
   const [events, setEvents] = useState<any[]>([]);
@@ -10,6 +44,8 @@ const EventList = ({ onEdit }: any) => {
   const [viewItem, setViewItem] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [reminderSending, setReminderSending] = useState<string | null>(null);
+  const [, forceUpdate] = useState(0);
 
   const API_BASE_URL = import.meta.env.VITE_API_URL;
 
@@ -34,6 +70,11 @@ const EventList = ({ onEdit }: any) => {
     fetchEvents();
   }, []);
 
+  useEffect(() => {
+    const interval = setInterval(() => forceUpdate(n => n + 1), 60000);
+    return () => clearInterval(interval);
+  }, []);
+
   // close menu outside click
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -47,6 +88,67 @@ const EventList = ({ onEdit }: any) => {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
+  const handleSendReminder = async (event: any) => {
+    try {
+      setReminderSending(event._id);
+
+      await axios.post(
+        `${API_BASE_URL}/api/event-submissions/${event._id}/remind`,
+        {},
+        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+      );
+
+      localStorage.setItem(getReminderKey(event._id), Date.now().toString());
+
+      toast.success("Reminder sent to admin");
+      forceUpdate(n => n + 1);
+    } catch {
+      toast.error("Failed to send reminder");
+    } finally {
+      setReminderSending(null);
+    }
+  };
+
+  const ReminderButton = ({ event }: { event: any }) => {
+    const eligible = canSendReminder(event);
+    const isSending = reminderSending === event._id;
+    const isPending = event.status === "pending";
+    const timeLeft = getTimeLeftLabel(event);
+
+    if (!isPending) {
+      return (
+        <button disabled
+          title="Only available for pending submissions"
+          className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs bg-gray-100 text-gray-400 cursor-not-allowed">
+          <Bell size={12} />
+          <span className="hidden sm:inline">Remind</span>
+        </button>
+      );
+    }
+
+    if (!eligible) {
+      return (
+        <button disabled
+          title={timeLeft ? `Available in ${timeLeft}` : "Available after 24hrs from submission"}
+          className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs bg-gray-100 text-gray-400 cursor-not-allowed">
+          <Bell size={12} />
+          <span className="hidden sm:inline">{timeLeft ?? "24h"}</span>
+        </button>
+      );
+    }
+
+    return (
+      <button
+        onClick={() => handleSendReminder(event)}
+        disabled={isSending}
+        title="Send reminder to admin"
+        className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs bg-amber-100 text-amber-700 hover:bg-amber-200 transition-colors disabled:opacity-50">
+        <Bell size={12} className={isSending ? "animate-pulse" : ""} />
+        <span className="hidden sm:inline">{isSending ? "..." : "Remind"}</span>
+      </button>
+    );
+  };
+
   const handleDelete = async (id: string) => {
     try {
       setDeleteId(id);
@@ -55,8 +157,9 @@ const EventList = ({ onEdit }: any) => {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
+      localStorage.removeItem(getReminderKey(id));
       toast.success("Event Deleted");
-      fetchEvents();
+      await fetchEvents();
       setOpenMenu(null);
     } catch {
       toast.error("Delete failed");
@@ -260,6 +363,10 @@ const EventList = ({ onEdit }: any) => {
                             Rejected
                           </span>
                         )}
+                      </div>
+                      <div className="flex flex-col items-center gap-0.5">
+                        <span className="text-[10px] text-gray-400">Reminder</span>
+                        <ReminderButton event={e} />
                       </div>
                     </div>
                     {/* Divider */}
