@@ -126,7 +126,7 @@ const Index = () => {
 
   // --- Artists ---
   const artistFuse = new Fuse(artistList, {
-    keys: ["name", "artForm", "state", "region"],
+    keys: ["name", "artForm", "state", "region", "bio", "city"],
     threshold: 0.4,
     distance: 100,
     minMatchCharLength: 2,
