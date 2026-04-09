@@ -116,19 +116,70 @@ const ArtistDetails = () => {
   };
 
   const handleSubmit = async () => {
-    if (!formData.name || !formData.phone || !formData.email || !formData.message) {
+    const trimmedName = formData.name.trim();
+    const trimmedPhone = formData.phone.trim();
+    const trimmedEmail = formData.email.trim();
+    const trimmedMessage = formData.message.trim();
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const phoneRegex = /^[6-9]\d{9}$/;
+    const nameRegex = /^[A-Za-z\s]+$/;
+
+    // Required fields
+    if (
+      !trimmedName ||
+      !trimmedPhone ||
+      !trimmedEmail ||
+      !trimmedMessage
+    ) {
       toast.error("Fill all required fields");
+      return;
+    }
+
+    // Name validation
+    if (!nameRegex.test(trimmedName)) {
+      toast.error("Name should contain only letters");
+      return;
+    }
+
+    if (trimmedName.length < 3) {
+      toast.error("Name must be at least 3 characters");
+      return;
+    }
+
+    // Phone validation
+    if (!phoneRegex.test(trimmedPhone)) {
+      toast.error("Enter valid 10-digit mobile number");
+      return;
+    }
+
+    // Email validation
+    if (!emailRegex.test(trimmedEmail)) {
+      toast.error("Enter valid email address");
+      return;
+    }
+
+    // Message validation
+    if (trimmedMessage.length < 10) {
+      toast.error("Message must be at least 10 characters");
       return;
     }
 
     try {
       await axios.post(
         `${import.meta.env.VITE_API_URL}/api/contact-artist`,
-        formData
+        {
+          ...formData,
+          name: trimmedName,
+          phone: trimmedPhone,
+          email: trimmedEmail,
+          message: trimmedMessage,
+        }
       );
 
       toast.success("Contact request sent");
       setIsModalOpen(false);
+
       setFormData((prev) => ({
         ...prev,
         name: "",
@@ -455,7 +506,7 @@ const ArtistDetails = () => {
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 p-4 animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl w-full max-w-md max-h-[85vh] shadow-2xl transform animate-in slide-in-from-bottom-4 duration-300 flex flex-col overflow-hidden">
-            
+
             {/* Header - Sticky */}
             <div className="relative bg-gradient-to-r from-[#83261D] to-[#B45F4A] p-5 rounded-t-2xl sticky top-0 z-10 flex-shrink-0">
               <button
