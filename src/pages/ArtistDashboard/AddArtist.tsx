@@ -2,7 +2,7 @@
 import { useState, useRef, ChangeEvent, useEffect } from "react";
 import { State, City } from "country-state-city";
 import Select from "react-select";
-import {toast} from "react-hot-toast";
+import { toast } from "react-hot-toast";
 import { Upload, X, Image, MapPin, User, Palette, FileText, Check, Phone, Mail } from "lucide-react";
 import axios from "axios";
 
@@ -148,48 +148,119 @@ const AddArtist = ({ editData, onSuccess }: AddArtistProps) => {
   };
 
   const validateForm = () => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const phoneRegex = /^[6-9]\d{9}$/;
+    const nameRegex = /^[A-Za-z\s]+$/;
+    const urlRegex =
+      /^(https?:\/\/)?([\w\d-]+\.)+[\w-]{2,}(\/.*)?$/i;
+
+    // Name validation
     if (!formData.name.trim()) {
       toast.error("Artist name is required");
       window.scrollTo({ top: 0, behavior: "smooth" });
       return false;
     }
+
+    if (!nameRegex.test(formData.name.trim())) {
+      toast.error("Artist name should contain only letters");
+      return false;
+    }
+
+    if (formData.name.trim().length < 3) {
+      toast.error("Artist name must be at least 3 characters");
+      return false;
+    }
+
+    // Email validation
     if (!formData.email.trim()) {
       toast.error("Email is required");
       return false;
     }
+
+    if (!emailRegex.test(formData.email.trim())) {
+      toast.error("Enter a valid email address");
+      return false;
+    }
+
+    // Phone validation
     if (!formData.phone.trim()) {
       toast.error("Phone number is required");
       return false;
     }
+
+    if (!phoneRegex.test(formData.phone.trim())) {
+      toast.error("Enter valid 10-digit mobile number");
+      return false;
+    }
+
+    // Website validation (optional)
+    if (
+      formData.website &&
+      formData.website.trim() &&
+      !urlRegex.test(formData.website.trim())
+    ) {
+      toast.error("Enter valid website URL");
+      return false;
+    }
+
+    // State validation
     if (!formData.state) {
       toast.error("Please select state");
       return false;
     }
+
+    // City validation
     if (!formData.city) {
       toast.error("Please select city");
       return false;
     }
+
+    // Bio validation
     if (!formData.bio.trim()) {
       toast.error("Artist biography is required");
       return false;
     }
+
+    if (formData.bio.trim().length < 20) {
+      toast.error("Biography must be at least 20 characters");
+      return false;
+    }
+
+    // Category validation
     if (!formData.selectedData || formData.selectedData.length === 0) {
       toast.error("Please select at least one category");
       return false;
     }
 
+    // Art type validation
     const hasArtTypes = formData.selectedData.every(
       (item: any) => item.artTypes && item.artTypes.length > 0
     );
+
     if (!hasArtTypes) {
       toast.error("Please select at least one art type for each category");
       return false;
     }
 
-    // ← Only require image on create, not edit
+    // Image validation only in create mode
     if (!isEditMode && !formData.imageFile) {
       toast.error("Please upload artist profile picture");
       return false;
+    }
+
+    // Image file validation
+    if (formData.imageFile) {
+      const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+
+      if (!allowedTypes.includes(formData.imageFile.type)) {
+        toast.error("Image must be JPG, PNG, or WEBP");
+        return false;
+      }
+
+      if (formData.imageFile.size > 2 * 1024 * 1024) {
+        toast.error("Image size must be less than 5MB");
+        return false;
+      }
     }
 
     return true;
@@ -197,11 +268,6 @@ const AddArtist = ({ editData, onSuccess }: AddArtistProps) => {
 
   const handleSubmit = async () => {
     if (!validateForm()) return;
-
-    if (!validateForm()) {
-      toast.error("Please fill all required fields properly");
-      return;
-    }
 
     setSubmitting(true);
 
@@ -514,7 +580,7 @@ const AddArtist = ({ editData, onSuccess }: AddArtistProps) => {
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-600">State <span className="text-red-500">*</span></label>
                   <Select
-                  key={formData.state}
+                    key={formData.state}
                     options={stateOptions}
                     value={stateOptions.find(s => s.value === formData.state)}
                     placeholder="Select State"

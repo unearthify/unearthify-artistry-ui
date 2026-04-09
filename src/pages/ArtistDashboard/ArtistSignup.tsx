@@ -5,7 +5,7 @@ import { Mail, Lock, ArrowRight, Eye, EyeOff, User, Phone, Info, Briefcase, Awar
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import axios from "axios";
-import {toast} from "react-hot-toast";
+import { toast } from "react-hot-toast";
 
 const ArtistSignup = () => {
   const navigate = useNavigate();
@@ -60,39 +60,143 @@ const ArtistSignup = () => {
   };
 
   const handleSignup = async () => {
-    if (!name || !email || !phone || !password || !confirmPassword || !about || specialization.length === 0 || !experience || !city || !state) {
+    // Trim values
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim();
+    const trimmedPhone = phone.trim();
+    const trimmedAbout = about.trim();
+    const trimmedExperience = experience.toString().trim();
+    const trimmedCity = city.trim();
+    const trimmedState = state.trim();
+    const trimmedWebsite = website.trim();
+
+    // Regex patterns
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const phoneRegex = /^[6-9]\d{9}$/;
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    const nameRegex = /^[A-Za-z\s]+$/;
+    const urlRegex =
+      /^(https?:\/\/)?([\w\d-]+\.)+[\w-]{2,}(\/.*)?$/i;
+
+    // Required field validation
+    if (
+      !trimmedName ||
+      !trimmedEmail ||
+      !trimmedPhone ||
+      !password ||
+      !confirmPassword ||
+      !trimmedAbout ||
+      specialization.length === 0 ||
+      !trimmedExperience ||
+      !trimmedCity ||
+      !trimmedState
+    ) {
       toast.error("Please fill all required fields");
       return;
     }
 
+    // Name validation
+    if (!nameRegex.test(trimmedName)) {
+      toast.error("Name should contain only letters");
+      return;
+    }
+
+    if (trimmedName.length < 3) {
+      toast.error("Name must be at least 3 characters");
+      return;
+    }
+
+    // Email validation
+    if (!emailRegex.test(trimmedEmail)) {
+      toast.error("Enter a valid email address");
+      return;
+    }
+
+    // Phone validation
+    if (!phoneRegex.test(trimmedPhone)) {
+      toast.error("Enter a valid 10-digit mobile number");
+      return;
+    }
+
+    // Password validation
+    if (!passwordRegex.test(password)) {
+      toast.error(
+        "Password must contain 8+ chars, uppercase, lowercase, number, special character"
+      );
+      return;
+    }
+
+    // Confirm password
     if (password !== confirmPassword) {
       toast.error("Passwords do not match");
       return;
     }
 
-    if (phone.length !== 10) {
-      toast.error("Phone number must be 10 digits");
+    // About validation
+    if (trimmedAbout.length < 20) {
+      toast.error("About section must be at least 20 characters");
       return;
     }
 
+    // Experience validation
+    if (isNaN(Number(trimmedExperience)) || Number(trimmedExperience) < 0) {
+      toast.error("Experience must be a valid positive number");
+      return;
+    }
+
+    // City / State validation
+    if (trimmedCity.length < 2) {
+      toast.error("Enter valid city name");
+      return;
+    }
+
+    if (trimmedState.length < 2) {
+      toast.error("Enter valid state name");
+      return;
+    }
+
+    // Website validation (optional field)
+    if (trimmedWebsite && !urlRegex.test(trimmedWebsite)) {
+      toast.error("Enter a valid website URL");
+      return;
+    }
+
+    // Profile image validation
+    if (profileImage) {
+      const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+
+      if (!allowedTypes.includes(profileImage.type)) {
+        toast.error("Profile image must be JPG, PNG, or WEBP");
+        return;
+      }
+
+      if (profileImage.size > 2 * 1024 * 1024) {
+        toast.error("Profile image must be less than 5MB");
+        return;
+      }
+    }
+
     setIsLoading(true);
+
     try {
       const formData = new FormData();
-      formData.append("name", name);
-      formData.append("email", email);
-      formData.append("phone", phone);
+      formData.append("name", trimmedName);
+      formData.append("email", trimmedEmail);
+      formData.append("phone", trimmedPhone);
       formData.append("password", password);
-      formData.append("about", about);
+      formData.append("about", trimmedAbout);
       formData.append("specialization", JSON.stringify(specialization));
-      formData.append("experience", experience);
-      formData.append("city", city);
-      formData.append("state", state);
-      formData.append("website", website);
+      formData.append("experience", trimmedExperience);
+      formData.append("city", trimmedCity);
+      formData.append("state", trimmedState);
+      formData.append("website", trimmedWebsite);
+
       if (profileImage) {
         formData.append("profileImage", profileImage);
       }
 
-      const res = await axios.post(
+      await axios.post(
         `${import.meta.env.VITE_API_URL}/api/artists/signup`,
         formData,
         {
@@ -102,9 +206,10 @@ const ArtistSignup = () => {
         }
       );
 
-      toast.success("Signup submitted successfully! Wait for admin approval");
+      toast.success(
+        "Signup submitted successfully! Wait for admin approval"
+      );
       navigate("/artist-login");
-
     } catch (error: any) {
       console.error(error);
       toast.error(error.response?.data?.message || "Signup failed");
