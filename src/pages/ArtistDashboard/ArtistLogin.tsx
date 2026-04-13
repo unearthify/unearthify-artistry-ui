@@ -33,6 +33,7 @@ const ArtistLogin = () => {
 
       const artist = res.data.user;
       localStorage.setItem("token", res.data.token);
+      localStorage.setItem("user", JSON.stringify(res.data.user));
 
       // MAIN LOGIC
       if (artist.status === "approved") {

@@ -249,6 +249,44 @@ const ArtistSignup = () => {
 
               <div className="space-y-6 sm:space-y-8">
 
+                <div className="text-center pt-4">
+                  <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-4 border border-amber-200 shadow-sm">
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0">
+                        <div className="w-8 h-8 bg-gradient-to-r from-[#83261D] to-[#B45F4A] rounded-full flex items-center justify-center">
+                          <Mail size={14} className="text-white" />
+                        </div>
+                      </div>
+                      <div className="flex-1 text-left">
+                        <p className="text-sm font-semibold text-gray-800 mb-1">
+                          Admin Approval Required
+                        </p>
+                        <p className="text-xs text-gray-600">
+                          Your account will be reviewed by admin team shortly.
+                          Once approved or rejected, you will receive a
+                          notification email at
+                          <span className="font-semibold ml-1 text-[#83261D]">
+                            {email || "your registered email address"}
+                          </span>
+                        </p>
+                        <div className="mt-3 p-3 border border-red-300 bg-red-50 rounded-md">
+                          <p className="text-sm text-gray-800">
+                            <span className="font-semibold text-red-600">
+                              Disclaimer :
+                            </span>{" "}
+                            You will be able to log in only after your account
+                            is{" "}
+                            <span className="font-semibold text-green-600">
+                              approved
+                            </span>{" "}
+                            by the admin.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Personal Information Section */}
                 <div className="group">
                   <div className="flex items-center gap-2 mb-4">
@@ -599,29 +637,6 @@ const ArtistSignup = () => {
                       Sign In
                     </Link>
                   </p>
-                </div>
-
-                {/* Terms */}
-                <div className="text-center pt-4">
-                  <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-4 border border-amber-200 shadow-sm">
-                    <div className="flex items-start gap-3">
-                      <div className="flex-shrink-0">
-                        <div className="w-8 h-8 bg-gradient-to-r from-[#83261D] to-[#B45F4A] rounded-full flex items-center justify-center">
-                          <Mail size={14} className="text-white" />
-                        </div>
-                      </div>
-                      <div className="flex-1 text-left">
-                        <p className="text-sm font-semibold text-gray-800 mb-1">Admin Approval Required</p>
-                        <p className="text-xs text-gray-600">
-                          Your account will be reviewed by our admin team. Once approved or rejected,
-                          you will receive a notification email at <span className="font-semibold text-[#83261D]">{email || "your registered email address"}</span>
-                        </p>
-                        <p className="text-xs text-gray-600 mt-2">
-                          <span className="font-semibold text-[#83261D]">Note:</span> You will be able to login only after your account is <span className="font-semibold text-green-600">approved</span> by the admin.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>

@@ -8,10 +8,11 @@ import { Upload, X, Image, MapPin, User, Palette, FileText } from "lucide-react"
 type Props = {
   formId: number;
   data: any;
+  errors: any;
   onChange: (id: number, field: string, value: any) => void;
 };
 
-export default function ArtistFormFields({ formId, data, onChange }: Props) {
+export default function ArtistFormFields({ formId, data, errors, onChange }: Props) {
   const [states, setStates] = useState<any[]>([]);
   const [cities, setCities] = useState<any[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -144,6 +145,9 @@ export default function ArtistFormFields({ formId, data, onChange }: Props) {
                 className="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 rounded-lg sm:rounded-xl border border-gray-200 focus:border-[#83261D] focus:ring-2 focus:ring-[#83261D]/20 outline-none transition-all bg-white text-sm sm:text-base"
                 placeholder="e.g. Ravi Shankar"
               />
+              {errors?.name && (
+                <p className="text-red-500 text-xs mt-1">{errors.name}</p>
+              )}
             </div>
           </div>
 
@@ -186,6 +190,9 @@ export default function ArtistFormFields({ formId, data, onChange }: Props) {
                 onChange(formId, "selectedData", newData);
               }}
             />
+            {errors?.category && (
+              <p className="text-red-500 text-xs">{errors.category}</p>
+            )}
           </div>
 
           {/* Art Type Field - Only show if category is selected */}
@@ -224,6 +231,9 @@ export default function ArtistFormFields({ formId, data, onChange }: Props) {
                           onChange(formId, "selectedData", updated);
                         }}
                       />
+                      {errors?.artTypes && (
+                        <p className="text-red-500 text-xs">{errors.artTypes}</p>
+                      )}
                     </div>
                   );
                 })}
@@ -233,49 +243,63 @@ export default function ArtistFormFields({ formId, data, onChange }: Props) {
         </div>
 
         {/* Contact Details */}
-<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
-  
-  {/* Phone */}
-  <div>
-    <label className="text-sm font-semibold">
-      Phone Number <span className="text-red-500">*</span>
-    </label>
-    <input
-      value={data.phone}
-      onChange={(e) => onChange(formId, "phone", e.target.value)}
-      placeholder="Enter phone number"
-      className="w-full px-3 py-2 border rounded-lg"
-    />
-  </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
 
-  {/* Email */}
-  <div>
-    <label className="text-sm font-semibold">
-      Email <span className="text-red-500">*</span>
-    </label>
-    <input
-      type="email"
-      value={data.email}
-      onChange={(e) => onChange(formId, "email", e.target.value)}
-      placeholder="Enter email"
-      className="w-full px-3 py-2 border rounded-lg"
-    />
-  </div>
+          {/* Phone */}
+          <div>
+            <label className="text-sm font-semibold">
+              Phone Number <span className="text-red-500">*</span>
+            </label>
+            <input
+              value={data.phone}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (/^\d*$/.test(value)) {
+                  onChange(formId, "phone", value);
+                }
+              }}
+              placeholder="Enter phone number"
+              className="w-full px-3 py-2 border rounded-lg"
+            />
+            {errors?.phone && (
+              <p className="text-red-500 text-xs">{errors.phone}</p>
+            )}
+          </div>
 
-  {/* Website (Optional) */}
-  <div className="sm:col-span-2">
-    <label className="text-sm font-semibold">
-      Artist Website (Optional)
-    </label>
-    <input
-      value={data.website}
-      onChange={(e) => onChange(formId, "website", e.target.value)}
-      placeholder="https://example.com"
-      className="w-full px-3 py-2 border rounded-lg"
-    />
-  </div>
+          {/* Email */}
+          <div>
+            <label className="text-sm font-semibold">
+              Email <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="email"
+              value={data.email}
+              onChange={(e) => onChange(formId, "email", e.target.value)}
+              placeholder="Enter email"
+              className="w-full px-3 py-2 border rounded-lg"
+            />
+            {errors?.email && (
+              <p className="text-red-500 text-xs">{errors.email}</p>
+            )}
+          </div>
 
-</div>
+          {/* Website (Optional) */}
+          <div className="sm:col-span-2">
+            <label className="text-sm font-semibold">
+              Artist Website <span className="text-red-500">*</span>
+            </label>
+            <input
+              value={data.website}
+              onChange={(e) => onChange(formId, "website", e.target.value)}
+              placeholder="https://example.com"
+              className="w-full px-3 py-2 border rounded-lg"
+            />
+            {errors?.website && (
+              <p className="text-red-500 text-xs">{errors.website}</p>
+            )}
+          </div>
+
+        </div>
 
         {/* Location Section - Responsive */}
         <div className="bg-gradient-to-r from-amber-50/50 to-white p-3 sm:p-4 md:p-5 lg:p-6 rounded-xl sm:rounded-2xl border border-amber-100">
@@ -313,6 +337,9 @@ export default function ArtistFormFields({ formId, data, onChange }: Props) {
                 styles={customSelectStyles}
                 className="text-xs sm:text-sm"
               />
+              {errors?.state && (
+                <p className="text-red-500 text-xs">{errors.state}</p>
+              )}
             </div>
 
             {/* City Select */}
@@ -329,6 +356,9 @@ export default function ArtistFormFields({ formId, data, onChange }: Props) {
                 styles={customSelectStyles}
                 className="text-xs sm:text-sm"
               />
+              {errors?.city && (
+                <p className="text-red-500 text-xs">{errors.city}</p>
+              )}
             </div>
           </div>
         </div>
@@ -345,6 +375,9 @@ export default function ArtistFormFields({ formId, data, onChange }: Props) {
             className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-xl border border-gray-200 focus:border-[#83261D] focus:ring-2 focus:ring-[#83261D]/20 outline-none transition-all h-24 sm:h-28 md:h-32 lg:h-36 resize-none bg-white text-sm sm:text-base"
             placeholder="Share the artist's journey, achievements, artistic style, and contributions to Indian art..."
           />
+          {errors?.bio && (
+            <p className="text-red-500 text-xs">{errors.bio}</p>
+          )}
           <p className="text-[10px] sm:text-xs text-gray-400 text-right">
             {data.bio?.length || 0} characters
           </p>
@@ -397,6 +430,9 @@ export default function ArtistFormFields({ formId, data, onChange }: Props) {
                     onChange={handleImageChange}
                     className="hidden"
                   />
+                  {errors?.image && (
+                    <p className="text-red-500 text-xs">{errors.image}</p>
+                  )}
                 </label>
                 <p className="text-[10px] sm:text-xs text-gray-400 self-center">
                   JPG, PNG • Max 2MB

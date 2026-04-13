@@ -14,7 +14,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import AddArtist from "./AddArtist";
 import ArtistList from "./ArtistList";
-import {toast} from "react-hot-toast";
+import { toast } from "react-hot-toast";
 import EventList from "./EventList";
 import AddEvent from "./AddEvent";
 
@@ -38,7 +38,7 @@ const ArtistDashboard = () => {
         setSidebarOpen(false);
       }
     };
-    
+
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
@@ -52,66 +52,66 @@ const ArtistDashboard = () => {
   };
 
   const menuItems = [
-  {
-    id: "artist-list",
-    label: "Artist List",
-    icon: Users,
-    onClick: () => {
-      setEditArtist(null);
-      setActivePage("artist-list");
-      if (isMobile) setSidebarOpen(false);
+    {
+      id: "artist-list",
+      label: "Artist List",
+      icon: Users,
+      onClick: () => {
+        setEditArtist(null);
+        setActivePage("artist-list");
+        if (isMobile) setSidebarOpen(false);
+      }
+    },
+    {
+      id: "add-artist",
+      label: "Add Artist",
+      icon: UserPlus,
+      onClick: () => {
+        setEditArtist(null);
+        setActivePage("add-artist");
+        if (isMobile) setSidebarOpen(false);
+      }
+    },
+    {
+      id: "event-list",
+      label: "Event List",
+      icon: Calendar,
+      onClick: () => {
+        setActivePage("event-list");
+        if (isMobile) setSidebarOpen(false);
+      }
+    },
+    {
+      id: "add-event",
+      label: "Add Event",
+      icon: CalendarPlus,
+      onClick: () => {
+        setActivePage("add-event");
+        if (isMobile) setSidebarOpen(false);
+      }
     }
-  },
-  {
-    id: "add-artist",
-    label: "Add Artist",
-    icon: UserPlus,
-    onClick: () => {
-      setEditArtist(null);
-      setActivePage("add-artist");
-      if (isMobile) setSidebarOpen(false);
-    }
-  },
-  {
-    id: "event-list",
-    label: "Event List",
-    icon: Calendar,
-    onClick: () => {
-      setActivePage("event-list");
-      if (isMobile) setSidebarOpen(false);
-    }
-  },
-  {
-    id: "add-event",
-    label: "Add Event",
-    icon: CalendarPlus,
-    onClick: () => {
-      setActivePage("add-event");
-      if (isMobile) setSidebarOpen(false);
-    }
-  }
-];
+  ];
 
-const pageConfig = {
-  "artist-list": {
-    title: "Artist Directory",
-    subtitle: "View, edit, and organize your own artist profiles",
-  },
-  "add-artist": {
-    title: "Create Artist Profile",
-    subtitle: "Create your artist profile with complete details and portfolio",
-  },
-  "event-list": {
-    title: "Event Dashboard",
-    subtitle: "Track, manage, and update your events",
-  },
-  "add-event": {
-    title: "Create New Event",
-    subtitle: "Create and publish your own event for artists",
-  },
-};
+  const pageConfig = {
+    "artist-list": {
+      title: "Artist Directory",
+      subtitle: "View, edit, and organize your own artist profiles",
+    },
+    "add-artist": {
+      title: "Create Artist Profile",
+      subtitle: "Create your artist profile with complete details and portfolio",
+    },
+    "event-list": {
+      title: "Event Dashboard",
+      subtitle: "Track, manage, and update your events",
+    },
+    "add-event": {
+      title: "Create New Event",
+      subtitle: "Create and publish your own event for artists",
+    },
+  };
 
-const currentPage = pageConfig[activePage];
+  const currentPage = pageConfig[activePage];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
@@ -148,15 +148,44 @@ const currentPage = pageConfig[activePage];
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="p-4 sm:p-6 border-b border-white/10">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Palette size={20} className="text-white" />
-              </div>
-              <div className="min-w-0">
-                <h2 className="text-white font-bold text-lg truncate">Unearthify</h2>
-                <p className="text-white/60 text-xs truncate">Artist Dashboard</p>
-              </div>
-            </div>
+            {(() => {
+              const user = JSON.parse(localStorage.getItem("user") || "{}");
+              const name = user?.name || user?.email || "A";
+              const email = user?.email || "";
+              const initial = name.charAt(0).toUpperCase();
+
+              const getProfileImage = () => {
+                const buffer = user?.profileImage?.data;
+                if (!buffer) return null;
+                const base64 = btoa(
+                  new Uint8Array(buffer).reduce(
+                    (data, byte) => data + String.fromCharCode(byte),
+                    ""
+                  )
+                );
+                return `data:${user.mimetype};base64,${base64}`;
+              };
+
+              const imageUrl = getProfileImage();
+
+              return (
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border-2 border-white/30 overflow-hidden">
+                    {imageUrl ? (
+                      <img src={imageUrl} alt={user.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-white font-bold text-lg bg-white/20 w-full h-full flex items-center justify-center">
+                        {initial}
+                      </span>
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <h2 className="text-white font-bold text-sm truncate">{name}</h2>
+                    <p className="text-white/60 text-xs truncate">{email}</p>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
 
           {/* Navigation */}
@@ -228,7 +257,6 @@ const currentPage = pageConfig[activePage];
               {activePage === "artist-list" && (
                 <ArtistList
                   onEdit={(item: any) => {
-                    console.log("EDIT CLICKED", item);
                     setEditArtist(item);
                     setActivePage("add-artist");
                     if (isMobile) setSidebarOpen(false);
@@ -236,13 +264,13 @@ const currentPage = pageConfig[activePage];
                 />
               )}
               {activePage === "add-artist" && (
-                <AddArtist 
+                <AddArtist
                   editData={editArtist}
                   onSuccess={() => {
                     setActivePage("artist-list");
                     setEditArtist(null);
                     toast.success(editArtist ? "Artist updated successfully" : "Artist added successfully");
-                  }} 
+                  }}
                 />
               )}
               {activePage === "event-list" && (

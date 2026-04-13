@@ -154,7 +154,6 @@ const AddArtist = ({ editData, onSuccess }: AddArtistProps) => {
     const urlRegex =
       /^(https?:\/\/)?([\w\d-]+\.)+[\w-]{2,}(\/.*)?$/i;
 
-    // Name validation
     if (!formData.name.trim()) {
       toast.error("Artist name is required");
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -171,7 +170,6 @@ const AddArtist = ({ editData, onSuccess }: AddArtistProps) => {
       return false;
     }
 
-    // Email validation
     if (!formData.email.trim()) {
       toast.error("Email is required");
       return false;
@@ -182,7 +180,6 @@ const AddArtist = ({ editData, onSuccess }: AddArtistProps) => {
       return false;
     }
 
-    // Phone validation
     if (!formData.phone.trim()) {
       toast.error("Phone number is required");
       return false;
@@ -193,29 +190,26 @@ const AddArtist = ({ editData, onSuccess }: AddArtistProps) => {
       return false;
     }
 
-    // Website validation (optional)
-    if (
-      formData.website &&
-      formData.website.trim() &&
-      !urlRegex.test(formData.website.trim())
-    ) {
+    if (!formData.website.trim()) {
+      toast.error("Website is required");
+      return false;
+    }
+
+    if (!urlRegex.test(formData.website.trim())) {
       toast.error("Enter valid website URL");
       return false;
     }
 
-    // State validation
     if (!formData.state) {
       toast.error("Please select state");
       return false;
     }
 
-    // City validation
     if (!formData.city) {
       toast.error("Please select city");
       return false;
     }
 
-    // Bio validation
     if (!formData.bio.trim()) {
       toast.error("Artist biography is required");
       return false;
@@ -226,13 +220,11 @@ const AddArtist = ({ editData, onSuccess }: AddArtistProps) => {
       return false;
     }
 
-    // Category validation
     if (!formData.selectedData || formData.selectedData.length === 0) {
       toast.error("Please select at least one category");
       return false;
     }
 
-    // Art type validation
     const hasArtTypes = formData.selectedData.every(
       (item: any) => item.artTypes && item.artTypes.length > 0
     );
@@ -242,13 +234,11 @@ const AddArtist = ({ editData, onSuccess }: AddArtistProps) => {
       return false;
     }
 
-    // Image validation only in create mode
     if (!isEditMode && !formData.imageFile) {
       toast.error("Please upload artist profile picture");
       return false;
     }
 
-    // Image file validation
     if (formData.imageFile) {
       const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
 
@@ -470,15 +460,19 @@ const AddArtist = ({ editData, onSuccess }: AddArtistProps) => {
                   Phone Number <span className="text-red-500">*</span>
                 </label>
                 <input
+                  type="tel"
                   value={formData.phone}
-                  onChange={(e) => handleChange("phone", e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, "").slice(0, 10);
+                    handleChange("phone", val);
+                  }}
                   className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-[#83261D] focus:ring-2 focus:ring-[#83261D]/20 outline-none transition-all text-sm sm:text-base"
                   placeholder="+91 9876543210"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">Website (Optional)</label>
+                <label className="text-sm font-semibold text-gray-700">Website <span className="text-red-500">*</span></label>
                 <input
                   value={formData.website}
                   onChange={(e) => handleChange("website", e.target.value)}

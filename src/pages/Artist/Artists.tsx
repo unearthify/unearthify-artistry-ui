@@ -23,6 +23,7 @@ const Artists = () => {
   const [formList, setFormList] = useState<any[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [formErrors, setFormErrors] = useState<any>({});
   const navigate = useNavigate();
 
   const createEmptyArtist = () => ({
@@ -77,15 +78,97 @@ const Artists = () => {
     );
   };
 
+  const validateForm = (form: any) => {
+    const errors: any = {};
+
+    if (!form.name?.trim()) {
+      errors.name = "Artist name is required";
+    }
+
+    if (!form.phone?.trim()) {
+      errors.phone = "Phone number is required";
+    } else if (!/^[6-9]\d{9}$/.test(form.phone)) {
+      errors.phone = "Invalid phone number";
+    }
+
+    if (!form.email?.trim()) {
+      errors.email = "Email is required";
+    } else if (!/^\S+@\S+\.\S+$/.test(form.email)) {
+      errors.email = "Invalid email";
+    }
+
+    if (!form.state) {
+      errors.state = "State is required";
+    }
+
+    if (!form.city) {
+      errors.city = "City is required";
+    }
+
+    if (!form.bio?.trim()) {
+      errors.bio = "Biography is required";
+    } else if (form.bio.length < 30) {
+      errors.bio = "Minimum 30 characters required";
+    }
+
+    if (!form.website?.trim()) {
+      errors.website = "Website is required";
+    } else if (
+      !/^(https?:\/\/)?([\w\d-]+\.)+\w{2,}(\/.*)?$/.test(form.website)
+    ) {
+      errors.website = "Enter a valid website URL";
+    }
+
+    if (!form.imageFile) {
+      errors.image = "Image is required";
+    }
+
+    if (!form.selectedData || form.selectedData.length === 0) {
+      errors.category = "Select at least one category";
+    } else {
+      const invalid = form.selectedData.some(
+        (c: any) => !c.artTypes || c.artTypes.length === 0
+      );
+
+      if (invalid) {
+        errors.artTypes = "Select at least one art type";
+      }
+    }
+
+    return errors;
+  };
+
   const handleBulkSubmit = async () => {
     if (isSubmitting) return;
+
+    const errorsMap: any = {};
+    let hasError = false;
+
+    formList.forEach((form) => {
+      const errors = validateForm(form);
+
+      if (Object.keys(errors).length > 0) {
+        hasError = true;
+      }
+
+      errorsMap[form.id] = errors;
+    });
+
+    setFormErrors(errorsMap);
+
+    if (hasError) {
+      toast.error("Fix form errors before submitting");
+      return;
+    }
+
+    if (hasError) return;
     try {
       setIsSubmitting(true);
 
       const formData = new FormData();
       const payload: any[] = [];
 
-      formList.forEach((f) => {
+      formList.forEach((f, index) => {
         f.selectedData.forEach((cat: any) => {
           cat.artTypes.forEach((typeId: string) => {
             const selectedType = cat.artTypeOptions?.find(
@@ -107,6 +190,9 @@ const Artists = () => {
             });
           });
         });
+        if (f.imageFile) {
+          formData.append(`image_${index}`, f.imageFile);
+        }
       });
 
       formData.append("artists", JSON.stringify(payload));
@@ -227,28 +313,6 @@ const Artists = () => {
 
             {/* Action Buttons - Properly sized for mobile */}
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-4 sm:mt-6 lg:mt-8 w-full sm:w-auto">
-              {/* <button
-                onClick={() => {
-                  setFormMode("join");
-                  setFormList([createEmptyArtist()]);
-                }}
-                className="group w-full sm:w-auto bg-white text-[#83261D]
-                px-5 sm:px-6 lg:px-7
-                py-3 sm:py-3.5 lg:py-4
-                rounded-full
-                text-sm sm:text-base
-                font-semibold
-                hover:shadow-2xl
-                transition-all duration-300
-                hover:scale-[1.04]
-                active:scale-95
-                flex items-center justify-center gap-2">
-                <Sparkles
-                  size={16}
-                  className="transition-transform group-hover:rotate-12"
-                />
-                Join as Artist
-              </button> */}
 
               <button
                 onClick={() => {
@@ -342,6 +406,7 @@ const Artists = () => {
                       <ArtistFormFields
                         formId={form.id}
                         data={form}
+                        errors={formErrors[form.id] || {}}
                         onChange={handleFormChange}
                       />
                     </div>

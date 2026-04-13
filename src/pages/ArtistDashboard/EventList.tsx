@@ -57,7 +57,7 @@ const EventList = ({ onEdit }: any) => {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
-      console.log(res.data);
+      // console.log(res.data);
       setEvents(res.data.data || []);
     } catch {
       toast.error("Failed to fetch events");
