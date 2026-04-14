@@ -261,13 +261,6 @@ const ArtistList = ({ refreshTrigger, onEdit }: ArtistListProps) => {
                                 <tr key={s._id} className="border-b hover:bg-gray-50 transition-colors">
                                     <td className="p-3 sm:p-4">
                                         <div className="flex items-center gap-2">
-                                            {s.image ? (
-                                                <img src={s.image} alt={s.name} className="w-8 h-8 rounded-full object-cover" />
-                                            ) : (
-                                                <div className="w-8 h-8 bg-gradient-to-r from-[#83261D] to-[#B45F4A] rounded-full flex items-center justify-center text-white text-xs font-bold">
-                                                    {s.name?.charAt(0).toUpperCase()}
-                                                </div>
-                                            )}
                                             <span className="text-xs sm:text-sm font-medium text-gray-800">{s.name || "-"}</span>
                                         </div>
                                     </td>

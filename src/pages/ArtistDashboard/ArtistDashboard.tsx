@@ -9,7 +9,7 @@ import {
   ChevronRight,
   Calendar, // Add this
   CalendarPlus, // Add this
-  Palette
+  MessageCircle
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AddArtist from "./AddArtist";
@@ -17,12 +17,13 @@ import ArtistList from "./ArtistList";
 import { toast } from "react-hot-toast";
 import EventList from "./EventList";
 import AddEvent from "./AddEvent";
+import ContactedUsers from "./ContactedUsers";
 
 const ArtistDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [activePage, setActivePage] = useState<
-    "artist-list" | "add-artist" | "event-list" | "add-event"
+    "artist-list" | "add-artist" | "event-list" | "add-event" | "contacted-users"
   >("artist-list");
   const navigate = useNavigate();
   const [editArtist, setEditArtist] = useState<any>(null);
@@ -89,7 +90,16 @@ const ArtistDashboard = () => {
         setActivePage("add-event");
         if (isMobile) setSidebarOpen(false);
       }
-    }
+    },
+    {
+      id: "contacted-users",
+      label: "Contacted Users",
+      icon: MessageCircle,
+      onClick: () => {
+        setActivePage("contacted-users");
+        if (isMobile) setSidebarOpen(false);
+      }
+    },
   ];
 
   const pageConfig = {
@@ -108,6 +118,10 @@ const ArtistDashboard = () => {
     "add-event": {
       title: "Create New Event",
       subtitle: "Create and publish your own event for artists",
+    },
+    "contacted-users": {
+      title: "Contacted Users",
+      subtitle: "Users who have reached out to you",
     },
   };
 
@@ -292,6 +306,7 @@ const ArtistDashboard = () => {
                   }}
                 />
               )}
+              {activePage === "contacted-users" && <ContactedUsers />}
             </div>
           </div>
         </div>
