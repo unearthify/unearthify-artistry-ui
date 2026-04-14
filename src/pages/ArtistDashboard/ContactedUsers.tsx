@@ -55,8 +55,8 @@ const ContactedUsers = () => {
         setOpenMenuId(null);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
   const fetchContacts = async () => {
@@ -224,7 +224,9 @@ const ContactedUsers = () => {
                       <MoreVertical size={18} className="text-gray-500" />
                     </button>
                     {openMenuId === c._id && (
-                      <div className="absolute right-0 top-8 z-50 bg-white border border-gray-200 rounded-lg shadow-lg py-1 w-36">
+                      <div className="absolute right-0 top-8 z-50 bg-white border border-gray-200 rounded-lg shadow-lg py-1 w-36"
+                      onClick={(e) => e.stopPropagation()}
+                      >
                         <button
                           onClick={(e) => handleView(c, e)}
                           className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
